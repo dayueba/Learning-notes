@@ -32,5 +32,64 @@ MAIL_PORT = 587
 - 不加密时
 MAIL_PORT = 25(默认)
 
-默认发信人由
+默认发信人由一个两元素元组组成, 姓名, 邮箱地址
+<div>
+MAIL_DEFAULT_SENDER = ('your name', 'your_name@example.com')</div>
 
+如果使用的是邮件服务商的提供的SMTP服务器发信时,
+发信人的邮箱地址必须和MAIL_USERNAME相同
+```
+def send_mail(subject, to, body):
+    """
+    通用发信函数
+    :param subject: 主题 
+    :param to: 目的邮箱地址
+    :param body: 正文
+    :return: 
+    """
+    message = Message(subject, recipients=[to], body=body)
+    mail.send(message)
+```
+
+## 使用事务邮件服务SendGird
+网站 app.sendgrid.com/signup<br>
+获得app key 保存到SENDGRID_API_KEY中<br>
+
+```
+# 修改配置
+MAIL_SERVER = 'smtp.sendgrid.net'
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USERNAME = 'apikey'
+MAIL_PASSWORD = os.getenv('SENDGRID_API_KEY')
+```
+
+使用官方提供的sdk
+```
+pipenv install sendgrid
+```
+
+
+## 进阶
+
+- 使用模板
+    ```
+    def send_mail(subject, to, **kwargs):
+        """
+        发送有模板的邮件
+        :param subject: 
+        :param to: 
+        :param kwargs: 
+        :return: 
+        """
+        message = Message(subject, recipients=[to])
+        message.body = render_template('email/hello.txt', **kwargs)
+        message.html = render_template('email/hello.html', **kwargs)
+        mail.send(message)
+    ```
+    <p>
+        如果使用SendGrid, 可以使用它提供的在线模板功能
+    </p>
+- 异步发送邮件
+
+    使用异步任务队列处理工具 比如Celery

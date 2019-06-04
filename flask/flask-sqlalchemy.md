@@ -6,6 +6,7 @@
 - 为不同的数据库提供统一的接口, 可以方便切换数据库
 - 灵活性好, 也支持原生sql语句
 - 提升效率
+- 会话对象可以控制事物
 
 
 orm把底层的sql数据实体转化成高层的python对象
@@ -46,10 +47,43 @@ db.session.commit()
 
 # query
 # <模型类>.query.<过滤方法>.<查询方法>
+users = User.query.all()
+users = User.query.limit(10).all()
+users = User.query.order_by(User.username).all()
+users = User.query.order_by(User.username.desc()).all()
+user = User.query.first()
+user = User.query.get(1)
+users = User.query.order_by(User.username.desc()).limit(10).first()
+# 分页 
+posts = Post.query.paginate(1, 10)
+posts.itmes # 返回这一页包含的数据对象
+posts.page # 返回这一页的页数
+posts.pages # 返回总页数
+posts.has_prev, posts.has_next # 上一页下一页是否有对象显示
+posts.prev(), posts.next() # 返回上一页下一页的paginate对象
+# 条件查询
+users = User.query.filter_by(username='fake').all()
+users = User.query.order_by(User.username.desc()).filter_by(username='fake').limit(10).all()
+users = User.query.filter(User.id > 1).all()
+
+from sqlalchemy.sql.expression import not_, or_
+user = User.query.filter(
+    User.username.in_(['fake_name']),
+    User.password_hash ==None
+).first()
+user = User.query.filter(
+    not_(User.password == None)
+).first()
+user = User.query.filter(
+    or_(not_(User.password == None), User.id > 1)
+).first()
 
 # update
 note = Note.query.first()
 note.body = '456'
+db.session.commit()
+
+User.query.filter_by(username='fake').update({ 'password': '123' })
 db.session.commit()
 
 # delete

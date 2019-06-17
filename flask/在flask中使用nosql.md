@@ -194,3 +194,88 @@ Post.objects(id='id值').update_one(text='abc')
 post=Post.objects(id='id值').first()
 post.delete()
 ```
+## nosql中的关联关系
+### 一对一
+#### 第一种方法
+使用referenceField指向另一个对象的id
+```
+class Post(mongo.Document):
+    user = mongo.ReferenceField(User)
+```
+MongoEngine不能一次取到跟某个对象相关联的所有对象
+
+解决办法
+
+> user = User.objects.first()
+
+> Post.objects(user__id=user.id)
+
+#### 第二种方法
+在EmbeddedDocumentField中保存EmbeddedDocument
+```
+class Post(mongo.Document):
+    comments = mongo.ListField(mongo.EmbeddedDocumentField(Comment))
+```
+新增一个评论可以使用append方法
+> post.comments.append(comment)
+
+### 多对多
+在文档数据库中不存在多对多的概念
+
+处在不同的ListField中的对象, 互相之间没有任何联系. 可以添加一个字符串列表
+
+```
+class Post(mongo.Document):
+    tags = mongo.ListField( mongo.StringField() )
+```
+> Post.objects(tags__in="python").all()
+
+> Post.objects(tags__all=["python", "MongoEngine"]).all()
+
+## 例子
+#### Post基类
+```
+class Post(mongo.Document):
+    title = mongo.StringField(required)
+```
+
+#### 普通博客文章
+```
+class BlogPost(Post):
+    text = db.StringField(required=True)
+
+    @property
+    def type(self):
+        return "blog"
+```
+
+#### 视频文章
+```
+class VideoPost(Post):
+    url = db.StringField(required=True)
+
+    @property
+    def type(self):
+        return "video"
+```
+
+#### 图片文章
+```
+class ImagePost(Post):
+    image_url = db.StringField(required=True)
+
+    @property
+    def type(self):
+        return "image"
+```
+
+#### 引用文章
+```
+class QuotePost(Post):
+    quote = db.StringField(required=True)
+    author = db.StringFiel(required=True)
+
+    @property
+    def type(self):
+        return "quote"
+```

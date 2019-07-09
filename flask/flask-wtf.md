@@ -13,7 +13,7 @@ class LoginForm(FlaskForm):
     pass
 
     def validate(self):
-        check_validate = super(LoginFrom, self).validate()
+        check_validate = super(LoginForm, self).validate()
 
         if not check_validate:
             return False

@@ -18,3 +18,6 @@ jinja中的一个函数, 返回一个模板或者html字符串 (个人认为作�
 - session
 - url_for()
 - get_flashed_messages()
+    {% for msg in get_flashed_messages() %}
+        <p>{{msg}}</p>
+    {% endfor %}
